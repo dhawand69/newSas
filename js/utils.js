@@ -190,58 +190,23 @@ async function clearStore(storeName) {
 function sanitizeRecord(store, record) {
   // Define valid columns for each store based on your actual schema
   const validColumns = {
-    students: [
-      "id",
-      "rollNo",
-      "firstName",
-      "lastName",
-      "email",
-      "department",
-      "year",
-      "semester",
-    ],
-    faculty: [
-      "id",
-      "facultyId",
-      "firstName",
-      "lastName",
-      "email",
-      "department",
-      "specialization",
-      "password",
-    ],
-    classes: [
-      "id",
-      "code",
-      "name",
-      "department",
-      "semester",
-      "faculty",
-      "year",
-      "credits",
-    ],
-    attendance: [
-      "id",
-      "classId",
-      "studentId",
-      "date",
-      "session",
-      "status",
-      "notes",
-    ],
-    years: ["id", "year", "startDate", "endDate", "type"],
-    settings: ["id", "key", "value"],
+    students: ['id', 'rollNo', 'firstName', 'lastName', 'email', 'department', 'year', 'semester'],
+    faculty: ['id', 'facultyId', 'firstName', 'lastName', 'email', 'department', 'specialization', 'password'],
+    classes: ['id', 'code', 'name', 'department', 'semester', 'faculty', 'year', 'credits'],
+    attendance: ['id', 'classId', 'studentId', 'date', 'session', 'status', 'notes'],
+    years: ['id', 'year', 'startDate', 'endDate', 'type'],
+    settings: ['id', 'key', 'value']
   };
-
+  
   const cleanedRecord = {};
   const columns = validColumns[store] || [];
-
-  columns.forEach((column) => {
+  
+  columns.forEach(column => {
     if (record.hasOwnProperty(column) && record[column] !== undefined) {
       cleanedRecord[column] = record[column];
     }
   });
-
+  
   // If no valid columns found, return the record as-is (let Supabase handle it)
   return Object.keys(cleanedRecord).length > 0 ? cleanedRecord : record;
 }
@@ -2455,8 +2420,7 @@ async function importStructuredData(zipContent, progressBar) {
 
       // Import new data
       for (const item of data) {
-        const cleanedItem = sanitizeRecord(store, item);
-        await addRecord(store, cleanedItem);
+        await addRecord(store, item);
       }
 
       // Update progress
@@ -2502,8 +2466,7 @@ async function importIndividualFiles(zipContent, progressBar) {
 
           // Import new data
           for (const item of data) {
-            const cleanedItem = sanitizeRecord(store, item);
-            await addRecord(store, cleanedItem);
+            await addRecord(store, item);
           }
 
           imported = true;
@@ -2539,8 +2502,7 @@ async function importFromStructuredJSON(completeData, progressBar) {
 
       // Import new data
       for (const item of data) {
-        const cleanedItem = sanitizeRecord(store, item);
-        await addRecord(store, cleanedItem);
+        await addRecord(store, item);
       }
     }
 
@@ -2571,8 +2533,7 @@ async function importFromLegacyJSON(data, progressBar) {
 
       // Import new data
       for (const item of data[store]) {
-        const cleanedItem = sanitizeRecord(store, item);
-        await addRecord(store, cleanedItem);
+        await addRecord(store, item);
       }
     }
 
@@ -2599,3 +2560,5 @@ async function exportAllData() {
   a.download = `attendance_backup_${new Date().getTime()}.json`;
   a.click();
 }
+
+
