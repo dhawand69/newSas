@@ -11,239 +11,25 @@ async function initDB() {
   }
 }
 
-// ========== STUDENTS ==========
-async function loadStudents() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("students")
-      .select("*");
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error loading students:", error);
-    return [];
-  }
-}
+// ========== GENERIC CRUD OPERATIONS ==========
 
-async function addStudent(studentData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("students")
-      .insert([studentData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error adding student:", error);
-    throw error;
-  }
-}
-
-async function updateStudent(id, updates) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("students")
-      .update(updates)
-      .eq("id", id)
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error updating student:", error);
-    throw error;
-  }
-}
-
-async function deleteStudent(id) {
-  try {
-    const { error } = await supabaseClient
-      .from("students")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  } catch (error) {
-    console.error("❌ Error deleting student:", error);
-    throw error;
-  }
-}
-
-// ========== ATTENDANCE ==========
-async function loadAttendance() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("attendance")
-      .select("*");
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error loading attendance:", error);
-    return [];
-  }
-}
-
-async function markAttendance(attendanceData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("attendance")
-      .insert([attendanceData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error marking attendance:", error);
-    throw error;
-  }
-}
-
-async function updateAttendance(id, updates) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("attendance")
-      .update(updates)
-      .eq("id", id)
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error updating attendance:", error);
-    throw error;
-  }
-}
-
-// ========== CLASSES ==========
-async function loadClasses() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("classes")
-      .select("*");
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error loading classes:", error);
-    return [];
-  }
-}
-
-async function addClass(classData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("classes")
-      .insert([classData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error adding class:", error);
-    throw error;
-  }
-}
-
-async function deleteClass(id) {
-  try {
-    const { error } = await supabaseClient
-      .from("classes")
-      .delete()
-      .eq("id", id);
-    if (error) throw error;
-  } catch (error) {
-    console.error("❌ Error deleting class:", error);
-    throw error;
-  }
-}
-
-// ========== FACULTY ==========
-async function loadFaculty() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("faculty")
-      .select("*");
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error loading faculty:", error);
-    return [];
-  }
-}
-
-async function addFaculty(facultyData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("faculty")
-      .insert([facultyData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error adding faculty:", error);
-    throw error;
-  }
-}
-
-// ========== ACADEMIC YEARS ==========
-async function loadAcademicYears() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("academic_years")
-      .select("*");
-    if (error) throw error;
-    console.log("✅ Academic years loaded:", data);
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error fetching from years:", error);
-    return [];
-  }
-}
-
-async function addAcademicYear(yearData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("academic_years")
-      .insert([yearData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error adding academic year:", error);
-    throw error;
-  }
-}
-
-// ========== SESSIONS ==========
-async function loadSessions() {
-  try {
-    const { data, error } = await supabaseClient
-      .from("sessions")
-      .select("*");
-    if (error) throw error;
-    return data || [];
-  } catch (error) {
-    console.error("❌ Error loading sessions:", error);
-    return [];
-  }
-}
-
-async function addSession(sessionData) {
-  try {
-    const { data, error } = await supabaseClient
-      .from("sessions")
-      .insert([sessionData])
-      .select();
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error("❌ Error adding session:", error);
-    throw error;
-  }
-}
-
-// ========== GENERIC FUNCTIONS ==========
 async function addRecord(table, data) {
   try {
+    const validColumns = getValidColumns(table);
+    const cleanedData = Object.keys(data)
+      .filter(key => validColumns.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = data[key];
+        return obj;
+      }, {});
+
     const { data: result, error } = await supabaseClient
       .from(table)
-      .insert([data])
+      .insert([cleanedData])
       .select();
+
     if (error) throw error;
+    console.log(`✅ Added to ${table}:`, result[0]);
     return result[0];
   } catch (error) {
     console.error(`❌ Error adding to ${table}:`, error);
@@ -256,7 +42,9 @@ async function getAll(table) {
     const { data, error } = await supabaseClient
       .from(table)
       .select("*");
+
     if (error) throw error;
+    console.log(`✅ Fetched ${data?.length || 0} records from ${table}`);
     return data || [];
   } catch (error) {
     console.error(`❌ Error fetching from ${table}:`, error);
@@ -271,6 +59,7 @@ async function getRecord(table, id) {
       .select("*")
       .eq("id", id)
       .single();
+
     if (error) throw error;
     return data;
   } catch (error) {
@@ -279,14 +68,28 @@ async function getRecord(table, id) {
   }
 }
 
-async function updateRecord(table, id, updates) {
+async function updateRecord(table, record) {
   try {
+    const { id, ...updates } = record;
+
+    const validColumns = getValidColumns(table);
+    const cleanedUpdates = Object.keys(updates)
+      .filter(key => validColumns.includes(key))
+      .reduce((obj, key) => {
+        obj[key] = updates[key];
+        return obj;
+      }, {});
+
+    cleanedUpdates.updatedAt = new Date().toISOString();
+
     const { data, error } = await supabaseClient
       .from(table)
-      .update(updates)
+      .update(cleanedUpdates)
       .eq("id", id)
       .select();
+
     if (error) throw error;
+    console.log(`✅ Updated ${table}:`, data[0]);
     return data[0];
   } catch (error) {
     console.error(`❌ Error updating ${table}:`, error);
@@ -300,52 +103,188 @@ async function deleteRecord(table, id) {
       .from(table)
       .delete()
       .eq("id", id);
+
     if (error) throw error;
+    console.log(`✅ Deleted from ${table}`);
   } catch (error) {
     console.error(`❌ Error deleting from ${table}:`, error);
     throw error;
   }
 }
 
-// ========== FILTERING ==========
+// ========== COLUMN DEFINITIONS ==========
+
+function getValidColumns(table) {
+  const columns = {
+    students: ['id', 'rollNo', 'firstName', 'lastName', 'email', 'department', 'year', 'semester', 'createdAt', 'updatedAt'],
+    faculty: ['id', 'facultyId', 'firstName', 'lastName', 'email', 'department', 'specialization', 'password', 'createdAt', 'updatedAt'],
+    classes: ['id', 'code', 'name', 'department', 'semester', 'faculty', 'year', 'credits', 'createdAt', 'updatedAt'],
+    attendance: ['id', 'classId', 'studentId', 'date', 'session', 'status', 'notes', 'createdAt', 'updatedAt'],
+    academic_years: ['id', 'year', 'startDate', 'endDate', 'type', 'createdAt'],
+    settings: ['id', 'key', 'value', 'createdAt', 'updatedAt']
+  };
+  return columns[table] || [];
+}
+
+// ========== TABLE-SPECIFIC CRUD ==========
+
+async function loadStudents() {
+  return await getAll('students');
+}
+
+async function addStudent(studentData) {
+  return await addRecord('students', studentData);
+}
+
+async function updateStudent(studentRecord) {
+  return await updateRecord('students', studentRecord);
+}
+
+async function deleteStudent(id) {
+  return await deleteRecord('students', id);
+}
+
+async function loadFaculty() {
+  return await getAll('faculty');
+}
+
+async function addFaculty(facultyData) {
+  return await addRecord('faculty', facultyData);
+}
+
+async function updateFaculty(facultyRecord) {
+  return await updateRecord('faculty', facultyRecord);
+}
+
+async function deleteFaculty(id) {
+  return await deleteRecord('faculty', id);
+}
+
+async function loadClasses() {
+  return await getAll('classes');
+}
+
+async function addClass(classData) {
+  return await addRecord('classes', classData);
+}
+
+async function updateClass(classRecord) {
+  return await updateRecord('classes', classRecord);
+}
+
+async function deleteClass(id) {
+  return await deleteRecord('classes', id);
+}
+
+async function loadAttendance() {
+  return await getAll('attendance');
+}
+
+async function markAttendance(attendanceData) {
+  return await addRecord('attendance', attendanceData);
+}
+
+async function updateAttendance(attendanceRecord) {
+  return await updateRecord('attendance', attendanceRecord);
+}
+
+async function loadAcademicYears() {
+  return await getAll('academic_years');
+}
+
+async function addAcademicYear(yearData) {
+  return await addRecord('academic_years', yearData);
+}
+
+async function saveSetting(key, value) {
+  try {
+    const existing = await supabaseClient
+      .from('settings')
+      .select('*')
+      .eq('key', key)
+      .single();
+
+    if (existing.data) {
+      return await updateRecord('settings', {
+        id: existing.data.id,
+        key: key,
+        value: value
+      });
+    } else {
+      return await addRecord('settings', { key, value });
+    }
+  } catch (error) {
+    console.error('Error saving setting:', error);
+    throw error;
+  }
+}
+
+// ========== FILTERING & QUERIES ==========
+
 async function getStudentsByDepartment(department) {
   try {
     const { data, error } = await supabaseClient
-      .from("students")
-      .select("*")
-      .eq("department", department);
+      .from('students')
+      .select('*')
+      .eq('department', department);
+
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("❌ Error filtering students:", error);
+    console.error('Error filtering students:', error);
     return [];
   }
 }
 
-async function getAttendanceByDate(date) {
+async function getAttendanceByClass(classId, date = null) {
   try {
-    const { data, error } = await supabaseClient
-      .from("attendance")
-      .select("*")
-      .eq("date", date);
+    let query = supabaseClient
+      .from('attendance')
+      .select('*')
+      .eq('classId', classId);
+
+    if (date) {
+      query = query.eq('date', date);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("❌ Error getting attendance by date:", error);
+    console.error('Error getting attendance:', error);
     return [];
   }
 }
 
-async function getClassesByFaculty(facultyId) {
+async function getClassesByFaculty(facultyName) {
   try {
     const { data, error } = await supabaseClient
-      .from("classes")
-      .select("*")
-      .eq("faculty_id", facultyId);
+      .from('classes')
+      .select('*')
+      .eq('faculty', facultyName);
+
     if (error) throw error;
     return data || [];
   } catch (error) {
-    console.error("❌ Error getting classes by faculty:", error);
+    console.error('Error getting classes:', error);
     return [];
+  }
+}
+
+// ========== CLEAR STORE FOR IMPORTS ==========
+
+async function clearStore(storeName) {
+  try {
+    const allRecords = await getAll(storeName);
+
+    for (const record of allRecords) {
+      await deleteRecord(storeName, record.id);
+    }
+
+    console.log(`✅ Cleared store: ${storeName}`);
+    return true;
+  } catch (error) {
+    console.error(`❌ Error clearing store ${storeName}:`, error);
+    return false;
   }
 }
