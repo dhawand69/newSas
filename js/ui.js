@@ -237,24 +237,46 @@ async function saveBatchClasses() {
   }
 }
 
-async function addStudent(event) {
-  event.preventDefault();
-  const student = {
-    roll_no: document.getElementById("studentRollNo").value,
-    first_name: document.getElementById("studentFirstName").value,
-    last_name: document.getElementById("studentLastName").value,
-    email: document.getElementById("studentEmail").value,
-    department: document.getElementById("studentDept").value,
-    year: parseInt(document.getElementById("studentYear").value),
-    semester: parseInt(document.getElementById("studentSemester").value),
-    created_at: new Date().toISOString(),
-  };
-  await addRecord("students", student);
-  showToast("Student added successfully!");
-  event.target.reset();
-  closeModal("addUserModal");
-  loadStudents();
+async function addStudent() {
+  const rollNo = document.getElementById("addStudentRollNo").value; // ← ADD THIS LINE
+  const firstName = document.getElementById("addStudentFirstName").value;
+  const lastName = document.getElementById("addStudentLastName").value;
+  const email = document.getElementById("addStudentEmail").value;
+  const department = document.getElementById("addStudentDepartment").value;
+  const year = parseInt(document.getElementById("addStudentYear").value);
+  const semester = parseInt(document.getElementById("addStudentSemester").value);
+
+  if (!rollNo || !firstName || !lastName || !department) { // ← ADD rollNo to validation
+    showToast("Please fill all required fields", "error");
+    return;
+  }
+
+  try {
+    const newStudent = await addStudent({
+      rollNo: rollNo, // ← ADD THIS LINE
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      department: department,
+      year: year,
+      semester: semester
+    });
+
+    showToast(`Student ${firstName} added successfully!`, "success");
+    // Clear form
+    document.getElementById("addStudentRollNo").value = ""; // ← ADD THIS LINE
+    document.getElementById("addStudentFirstName").value = "";
+    document.getElementById("addStudentLastName").value = "";
+    document.getElementById("addStudentEmail").value = "";
+    // ... etc
+
+    await loadStudents();
+  } catch (error) {
+    console.error(error);
+    showToast("Error adding student", "error");
+  }
 }
+
 
 function autoFillStudentDetails() {
   const regNo = document.getElementById("studentRollNo").value;
@@ -1019,3 +1041,4 @@ window.onclick = function (event) {
     }
   }
 };
+
